@@ -76,6 +76,19 @@ async function processTransaction(signature: string): Promise<void> {
   console.log("👽 GMGN: https://gmgn.ai/sol/token/" + data.tokenMint);
   console.log("😈 BullX: https://neo.bullx.io/terminal?chainId=1399811149&address=" + data.tokenMint);
 
+  if (config.rug_check.notify_discord && process.env.DISCORD_WEBHOOK_URL) {
+    const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: `New Token Found: https://gmgn.ai/sol/token/${data.tokenMint}` }),
+    });
+    if (!res.ok) {
+      console.error("Failed to send notification to Discord:", res.statusText);
+    }
+  }
+
   // Check if simulation mode is enabled
   if (config.rug_check.simulation_mode) {
     console.log("👀 Token not swapped. Simulation mode is enabled.");
