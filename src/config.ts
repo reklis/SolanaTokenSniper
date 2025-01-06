@@ -46,10 +46,10 @@ export const config = {
     block_symbols: ["XXX"],
     block_names: ["XXX"],
     allow_insider_topholders: false, // Allow inseder accounts to be part of the topholders
-    max_alowed_pct_topholders: 10, // Max allowed percentage an individual topholder might hold
+    max_alowed_pct_topholders: 25, // Max allowed percentage an individual topholder might hold
     // Warning
-    min_total_markets: 999,
-    min_total_lp_providers: 999,
+    min_total_markets: 100,
+    min_total_lp_providers: 100,
     min_total_market_Liquidity: 1000000,
     // Misc
     ignore_pump_fun: true,
