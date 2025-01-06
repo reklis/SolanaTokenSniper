@@ -52,7 +52,7 @@ export const config = {
     min_total_lp_providers: 100,
     min_total_market_Liquidity: 1000000,
     // Misc
-    ignore_pump_fun: true,
+    ignore_pump_fun: false,
     max_score: 1, // Set to 0 to ignore
     legacy_not_allowed: [
       "Low Liquidity",
