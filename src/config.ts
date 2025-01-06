@@ -61,7 +61,7 @@ export const config = {
       "Freeze Authority still enabled",
       "Large Amount of LP Unlocked",
       "Copycat token",
-      "Low amount of LP Providers",
+      //"Low amount of LP Providers",
     ],
   },
 };
