@@ -48,7 +48,7 @@ export const config = {
     allow_insider_topholders: false, // Allow inseder accounts to be part of the topholders
     max_alowed_pct_topholders: 25, // Max allowed percentage an individual topholder might hold
     // Warning
-    min_total_markets: 100,
+    min_total_markets: 1,
     min_total_lp_providers: 1,
     min_total_market_Liquidity: 1000000,
     // Misc
