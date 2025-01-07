@@ -49,7 +49,7 @@ export const config = {
     max_alowed_pct_topholders: 25, // Max allowed percentage an individual topholder might hold
     // Warning
     min_total_markets: 100,
-    min_total_lp_providers: 100,
+    min_total_lp_providers: 10,
     min_total_market_Liquidity: 1000000,
     // Misc
     ignore_pump_fun: false,
