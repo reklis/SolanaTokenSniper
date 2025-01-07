@@ -406,6 +406,10 @@ export async function getRugCheckConfirmed(tokenMint: string): Promise<boolean> 
       check: rugRisks.some((risk) => config.rug_check.legacy_not_allowed.includes(risk.name)),
       message: "🚫 Token has legacy risks that are not allowed.",
     },
+    {
+      check: rugCheckConfig.check_dangerous_risks && rugRisks.some((risk) => risk.level === "danger"),
+      message: "🚫 Token has dangerous risks.",
+    },
   ];
 
   // If tracking duplicate tokens is enabled
