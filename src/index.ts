@@ -3,6 +3,7 @@ import dotenv from "dotenv"; // zero-dependency module that loads environment va
 import { WebSocketRequest } from "./types"; // Typescript Types for type safety
 import { config } from "./config"; // Configuration parameters for our bot
 import { fetchTransactionDetails, createSwapTransaction, getRugCheckConfirmed, fetchAndSaveSwapDetails } from "./transactions";
+import { getPrice } from "./lib/jup";
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -86,6 +87,19 @@ async function processTransaction(signature: string): Promise<void> {
     });
     if (!res.ok) {
       console.error("Failed to send notification to Discord:", res.statusText);
+    }
+
+    const tokenPrice = await getPrice(data.tokenMint);
+    console.log("💰 Token Price: ", tokenPrice);
+    const res2 = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: `Token Price: ${tokenPrice}` }),
+    });
+    if (!res2.ok) {
+      console.error("Failed to send notification to Discord:", res2.statusText);
     }
   }
 
