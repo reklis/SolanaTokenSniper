@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres:
     image: postgres:16-alpine
     environment:
       - POSTGRES_USER=postgres
@@ -15,7 +15,7 @@ services:
       - .env
     command: npm run dev
     depends_on:
-      - db
+      - postgres
 
   tracker:
     build:
@@ -25,7 +25,7 @@ services:
       - .env
     command: npm run tracker
     depends_on:
-      - db
+      - postgres
 
 volumes:
   postgres_data:
