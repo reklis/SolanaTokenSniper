@@ -2,30 +2,27 @@ import { config } from "./../config"; // Configuration parameters for our bot
 import axios from "axios";
 import * as sqlite3 from "sqlite3";
 import dotenv from "dotenv";
-import { open } from "sqlite";
-import { createTableHoldings } from "./db";
+import { createTableHoldings, removeHolding, selectAllHoldings } from "./db";
 import { HoldingRecord } from "../types";
 import { DateTime } from "luxon";
 import { createSellTransaction } from "../transactions";
+import { sendDiscordMessage } from "../lib/discord";
 
 // Load environment variables from the .env file
 dotenv.config();
 
+async function simulateSellTransaction(token: string) {
+  await removeHolding(token);
+  return Math.random().toString().slice(2, 15);
+}
+
 async function main() {
   const priceUrl = process.env.JUP_HTTPS_PRICE_URI || "";
 
-  // Connect to database and create if not exists
-  const db = await open({
-    filename: config.swap.db_name_tracker_holdings,
-    driver: sqlite3.Database,
-  });
-
   // Create Table if not exists
-  const holdingsTableExist = await createTableHoldings(db);
+  const holdingsTableExist = await createTableHoldings();
   if (!holdingsTableExist) {
     console.log("Holdings table not present.");
-    // Close the database connection when done
-    await db.close();
   }
 
   // Proceed with tracker
@@ -35,13 +32,16 @@ async function main() {
     const saveLog = (...args: unknown[]): void => {
       const message = args.map((arg) => String(arg)).join(" ");
       holdingLogs.push(message);
+      if (config.rug_check.notify_discord) {
+        sendDiscordMessage(message);
+      }
     };
 
     // Get all our current holdings
-    const holdings = await db.all("SELECT * FROM holdings");
+    const holdings = await selectAllHoldings();
     if (holdings.length !== 0) {
       // Get all token ids
-      const tokenValues = holdings.map((holding) => holding.Token).join(",");
+      const tokenValues = holdings.map((holding) => holding.token).join(",");
 
       // @TODO, add more sources for current prices. Now our price is the current price based on the Jupiter Last Swap (sell/buy) price
 
@@ -66,17 +66,17 @@ async function main() {
       await Promise.all(
         holdings.map(async (row) => {
           const holding: HoldingRecord = row;
-          const token = holding.Token;
-          const tokenName = holding.TokenName === "N/A" ? token : holding.TokenName;
-          const tokenTime = holding.Time;
-          const tokenBalance = holding.Balance;
-          const tokenSolPaid = holding.SolPaid;
-          const tokenSolFeePaid = holding.SolFeePaid;
-          const tokenSolPaidUSDC = holding.SolPaidUSDC;
-          const tokenSolFeePaidUSDC = holding.SolFeePaidUSDC;
-          const tokenPerTokenPaidUSDC = holding.PerTokenPaidUSDC;
-          const tokenSlot = holding.Slot;
-          const tokenProgram = holding.Program;
+          const token = holding.token;
+          const tokenName = holding.token_name === "N/A" ? token : holding.token_name;
+          const tokenTime = holding.time;
+          const tokenBalance = holding.balance;
+          const tokenSolPaid = holding.sol_paid;
+          const tokenSolFeePaid = holding.sol_fee_paid;
+          const tokenSolPaidUSDC = holding.sol_paid_usdc;
+          const tokenSolFeePaidUSDC = holding.sol_fee_paid_usdc;
+          const tokenPerTokenPaidUSDC = holding.per_token_paid_usdc;
+          const tokenSlot = holding.slot;
+          const tokenProgram = holding.program;
 
           // Conver Trade Time
           const centralEuropenTime = DateTime.fromMillis(tokenTime).toLocal();
@@ -95,7 +95,9 @@ async function main() {
           if (config.sell.auto_sell && config.sell.auto_sell === true) {
             const amountIn = tokenBalance.toString().replace(".", "");
             if (unrealizedPnLPercentage >= config.sell.take_profit_percent) {
-              const tx = await createSellTransaction(config.liquidity_pool.wsol_pc_mint, token, amountIn);
+              const tx = (config.rug_check.simulation_mode)
+                ? await simulateSellTransaction(token)
+                : await createSellTransaction(config.liquidity_pool.wsol_pc_mint, token, amountIn);
               if (!tx) {
                 sltpMessage = "⛔ Could not take profit. Trying again in 5 seconds.";
               }
@@ -104,7 +106,9 @@ async function main() {
               }
             }
             if (unrealizedPnLPercentage <= -config.sell.stop_loss_percent) {
-              const tx = await createSellTransaction(config.liquidity_pool.wsol_pc_mint, token, amountIn);
+              const tx = (config.rug_check.simulation_mode)
+                ? await simulateSellTransaction(token)
+                : await createSellTransaction(config.liquidity_pool.wsol_pc_mint, token, amountIn);
               if (!tx) {
                 sltpMessage = "⛔ Could not sell stop loss. Trying again in 5 seconds.";
               }
@@ -138,7 +142,6 @@ async function main() {
 
     // Close the database connection when done
     console.log("Last Update: ", new Date().toISOString());
-    await db.close();
   }
 
   setTimeout(main, 5000); // Call main again after 5 seconds

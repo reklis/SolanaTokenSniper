@@ -1,10 +1,11 @@
 import WebSocket from "ws"; // Node.js websocket library
 import dotenv from "dotenv"; // zero-dependency module that loads environment variables from a .env
-import { WebSocketRequest } from "./types"; // Typescript Types for type safety
+import { HoldingRecord, WebSocketRequest } from "./types"; // Typescript Types for type safety
 import { config } from "./config"; // Configuration parameters for our bot
 import { fetchTransactionDetails, createSwapTransaction, getRugCheckConfirmed, fetchAndSaveSwapDetails } from "./transactions";
-import { getPrice } from "./lib/jup";
+import { getBuyQuote, getPrice } from "./lib/jup";
 import { sendDiscordMessage } from "./lib/discord";
+import { insertHolding } from "./tracker/db";
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -80,39 +81,75 @@ async function processTransaction(signature: string): Promise<void> {
 
   if (config.rug_check.notify_discord && process.env.DISCORD_WEBHOOK_URL) {
     sendDiscordMessage(`New Token Found: https://gmgn.ai/sol/token/${data.tokenMint}`);
-
-    const tokenPrice = await getPrice(data.tokenMint);
-    console.log("💰 Token Price: ", tokenPrice);
-    sendDiscordMessage(`Token Price: ${tokenPrice}`);
   }
 
-  // Check if simulation mode is enabled
-  if (config.rug_check.simulation_mode) {
-    console.log("👀 Token not swapped. Simulation mode is enabled.");
-    console.log("🟢 Resuming looking for new tokens..\n");
-    return;
-  }
+  // // Check if simulation mode is enabled
+  // if (config.rug_check.simulation_mode) {
+  //   console.log("👀 Token not swapped. Simulation mode is enabled.");
+  //   console.log("🟢 Resuming looking for new tokens..\n");
+  //   return;
+  // }
 
   // Add initial delay before first buy
   await new Promise((resolve) => setTimeout(resolve, config.tx.swap_tx_initial_delay));
 
   // Create Swap transaction
-  const tx = await createSwapTransaction(data.solMint, data.tokenMint);
+  const tx = (config.rug_check.simulation_mode)
+    ? Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    : await createSwapTransaction(data.solMint, data.tokenMint);
+
   if (!tx) {
     console.log("⛔ Transaction aborted. No valid id returned.");
     console.log("🟢 Resuming looking for new tokens...\n");
     return;
   }
 
-  // Output logs
-  console.log("✅ Swap quote recieved.");
-  console.log("🚀 Swapping SOL for Token.");
-  console.log("Swap Transaction: ", "https://solscan.io/tx/" + tx);
+  if (!config.rug_check.simulation_mode) {
+    // Output logs
+    console.log("✅ Swap quote recieved.");
+    console.log("🚀 Swapping SOL for Token.");
+    console.log("Swap Transaction: ", "https://solscan.io/tx/" + tx);
 
-  // Fetch and store the transaction for tracking purposes
-  const saveConfirmation = await fetchAndSaveSwapDetails(tx);
-  if (!saveConfirmation) {
-    console.log("❌ Warning: Transaction not saved for tracking! Track Manually!");
+    // Fetch and store the transaction for tracking purposes
+    const saveConfirmation = await fetchAndSaveSwapDetails(tx);
+    if (!saveConfirmation) {
+      console.log("❌ Warning: Transaction not saved for tracking! Track Manually!");
+    }
+  } else {
+      // insert simulated tx into db
+
+      const tokenPrice = await getPrice([data.tokenMint, config.liquidity_pool.wsol_pc_mint]);
+      console.log("💰 Token Price: ", tokenPrice[data.tokenMint]?.price);
+  
+      const buyQuote = await getBuyQuote(data.tokenMint, config.swap.amount);
+      console.log("💰 Buy Quote: ", buyQuote);
+      const solPriceUsdc = tokenPrice[config.liquidity_pool.wsol_pc_mint]?.price
+      const solPaidUsdc = solPriceUsdc * 0.01;
+      const tokenAmount = buyQuote.outAmount;
+      const solFeePaidUsdc = solPriceUsdc * 0.001;
+      const perTokenUsdcPrice = solPaidUsdc / tokenAmount;
+
+      console.log("💰 Token Amount: ", tokenAmount);
+      console.log("💰 Sol Fee Paid: ", solFeePaidUsdc);
+      console.log("💰 Per Token Usdc Price: ", perTokenUsdcPrice);
+  
+      const newHolding: HoldingRecord = {
+        time: Date.now(),
+        token: data.tokenMint,
+        token_name: data.tokenMint,
+        balance: tokenAmount,
+        sol_paid: 0.01,
+        sol_fee_paid: solFeePaidUsdc,
+        sol_paid_usdc: solPaidUsdc,
+        sol_fee_paid_usdc: solFeePaidUsdc,
+        per_token_paid_usdc: perTokenUsdcPrice,
+        slot: 1,
+        program: "simulated_program",
+      };
+
+      await insertHolding(newHolding);
+      sendDiscordMessage(`New Holding: sol fee ${solFeePaidUsdc} usdc, token amount ${tokenAmount}, per token usdc price ${perTokenUsdcPrice}`);
+
   }
 }
 

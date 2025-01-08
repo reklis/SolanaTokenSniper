@@ -516,17 +516,17 @@ export async function fetchAndSaveSwapDetails(tx: string): Promise<boolean> {
 
     // Add holding to db
     const newHolding: HoldingRecord = {
-      Time: swapTransactionData.timestamp,
-      Token: swapTransactionData.tokenOutputs[0].mint,
-      TokenName: tokenName,
-      Balance: swapTransactionData.tokenOutputs[0].tokenAmount,
-      SolPaid: swapTransactionData.tokenInputs[0].tokenAmount,
-      SolFeePaid: swapTransactionData.fee,
-      SolPaidUSDC: solPaidUsdc,
-      SolFeePaidUSDC: solFeePaidUsdc,
-      PerTokenPaidUSDC: perTokenUsdcPrice,
-      Slot: swapTransactionData.slot,
-      Program: swapTransactionData.programInfo ? swapTransactionData.programInfo.source : "N/A",
+      time: swapTransactionData.timestamp,
+      token: swapTransactionData.tokenOutputs[0].mint,
+      token_name: tokenName,
+      balance: swapTransactionData.tokenOutputs[0].tokenAmount,
+      sol_paid: swapTransactionData.tokenInputs[0].tokenAmount,
+      sol_fee_paid: swapTransactionData.fee,
+      sol_paid_usdc: solPaidUsdc,
+      sol_fee_paid_usdc: solFeePaidUsdc,
+      per_token_paid_usdc: perTokenUsdcPrice,
+      slot: swapTransactionData.slot,
+      program: swapTransactionData.programInfo ? swapTransactionData.programInfo.source : "N/A",
     };
 
     await insertHolding(newHolding).catch((err) => {

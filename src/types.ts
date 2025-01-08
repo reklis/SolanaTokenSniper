@@ -262,17 +262,17 @@ export interface SwapEventDetailsResponse {
 
 export interface HoldingRecord {
   id?: number; // Optional because it's added by the database
-  Time: number;
-  Token: string;
-  TokenName: string;
-  Balance: number;
-  SolPaid: number;
-  SolFeePaid: number;
-  SolPaidUSDC: number;
-  SolFeePaidUSDC: number;
-  PerTokenPaidUSDC: number;
-  Slot: number;
-  Program: string;
+  time: number;
+  token: string;
+  token_name: string;
+  balance: number;
+  sol_paid: number;
+  sol_fee_paid: number;
+  sol_paid_usdc: number;
+  sol_fee_paid_usdc: number;
+  per_token_paid_usdc: number;
+  slot: number;
+  program: string;
 }
 
 export interface NewTokenRecord {

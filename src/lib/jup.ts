@@ -1,7 +1,7 @@
 import axios from "axios";
 import { config } from "../config";
 
-async function getPrice(token: string, retryCount = 0) {
+export async function getPrice(token: string[], retryCount = 0) {
   if (retryCount > 5) {
     console.log("⛔ Latest price could not be fetched. Giving up.");
     return 0;
@@ -11,7 +11,7 @@ async function getPrice(token: string, retryCount = 0) {
 
   const priceResponse = await axios.get<any>(priceUrl, {
     params: {
-      ids: token,
+      ids: token.join(","),
       showExtraInfo: true,
     },
     timeout: config.tx.get_timeout,
@@ -26,9 +26,18 @@ async function getPrice(token: string, retryCount = 0) {
     return getPrice(token, retryCount + 1);
   }
 
-  const tokenCurrentPrice = currentPrices[token]?.extraInfo?.lastSwappedPrice?.lastJupiterSellPrice;
-
-  return tokenCurrentPrice;
+  return currentPrices;
 }
 
-export { getPrice };
+export async function getBuyQuote(token: string, amount: string) {
+  const quoteUrl = process.env.JUP_HTTPS_QUOTE_URI || "";
+  const quoteResponse = await axios.get<any>(quoteUrl, {
+    params: {
+      inputMint: config.liquidity_pool.wsol_pc_mint,
+      outputMint: token,
+      amount: amount,
+    }
+  });
+
+  return quoteResponse.data;
+}
