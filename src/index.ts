@@ -4,6 +4,7 @@ import { WebSocketRequest } from "./types"; // Typescript Types for type safety
 import { config } from "./config"; // Configuration parameters for our bot
 import { fetchTransactionDetails, createSwapTransaction, getRugCheckConfirmed, fetchAndSaveSwapDetails } from "./transactions";
 import { getPrice } from "./lib/jup";
+import { sendDiscordMessage } from "./lib/discord";
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -78,29 +79,11 @@ async function processTransaction(signature: string): Promise<void> {
   console.log("😈 BullX: https://neo.bullx.io/terminal?chainId=1399811149&address=" + data.tokenMint);
 
   if (config.rug_check.notify_discord && process.env.DISCORD_WEBHOOK_URL) {
-    const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: `New Token Found: https://gmgn.ai/sol/token/${data.tokenMint}` }),
-    });
-    if (!res.ok) {
-      console.error("Failed to send notification to Discord:", res.statusText);
-    }
+    sendDiscordMessage(`New Token Found: https://gmgn.ai/sol/token/${data.tokenMint}`);
 
     const tokenPrice = await getPrice(data.tokenMint);
     console.log("💰 Token Price: ", tokenPrice);
-    const res2 = await fetch(process.env.DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: `Token Price: ${tokenPrice}` }),
-    });
-    if (!res2.ok) {
-      console.error("Failed to send notification to Discord:", res2.statusText);
-    }
+    sendDiscordMessage(`Token Price: ${tokenPrice}`);
   }
 
   // Check if simulation mode is enabled
