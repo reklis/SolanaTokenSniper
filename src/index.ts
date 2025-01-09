@@ -197,6 +197,10 @@ async function websocketHandler(): Promise<void> {
         // Add additional concurrent transaction
         activeTransactions++;
 
+        if (config.rug_check.verbose_log) {
+          console.log(jsonString)
+        }
+
         // Process transaction asynchronously
         processTransaction(signature)
           .catch((error) => {
