@@ -10,7 +10,7 @@ export async function createTableHoldings(): Promise<boolean> {
     await sql`
       CREATE TABLE IF NOT EXISTS holdings (
         id SERIAL PRIMARY KEY,
-        time INTEGER NOT NULL,
+        time BIGINT NOT NULL,
         token TEXT NOT NULL,
         token_name TEXT NOT NULL,
         balance REAL NOT NULL,
@@ -19,7 +19,7 @@ export async function createTableHoldings(): Promise<boolean> {
         sol_paid_usdc REAL NOT NULL,
         sol_fee_paid_usdc REAL NOT NULL,
         per_token_paid_usdc REAL NOT NULL,
-        slot INTEGER NOT NULL,
+        slot BIGINT NOT NULL,
         program TEXT NOT NULL
       );
     `
