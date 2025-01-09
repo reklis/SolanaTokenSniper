@@ -78,7 +78,7 @@ export async function createTableNewTokens(): Promise<boolean> {
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS tokens (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         time INTEGER NOT NULL,
         name TEXT NOT NULL,
         mint TEXT NOT NULL,
