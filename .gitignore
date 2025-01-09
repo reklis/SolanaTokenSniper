@@ -33,3 +33,5 @@ next-env.d.ts
 
 # Project Personal Files
 holdings.db
+.env.production
+

@@ -31,8 +31,9 @@ export const config = {
     track_public_wallet: "", // If set an additional log line will be shown with a link to track your wallet
   },
   rug_check: {
-    verbose_log: false,
+    verbose_log: true,
     simulation_mode: true,
+    notify_discord: true,
     // Dangerous
     allow_mint_authority: false, // The mint authority is the address that has permission to mint (create) new tokens. Strongly Advised to set to false.
     allow_not_initialized: false, // This indicates whether the token account is properly set up on the blockchain. Strongly Advised to set to false
