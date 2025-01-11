@@ -35,16 +35,16 @@ export async function selectAllHoldings(): Promise<HoldingRecord[]> {
     SELECT * FROM holdings;
   `
   return holdings.map((holding) => ({
-    time: holding.time,
+    time: parseInt(holding.time, 10),
     token: holding.token,
     token_name: holding.token_name,
-    balance: holding.balance,
-    sol_paid: holding.sol_paid,
-    sol_fee_paid: holding.sol_fee_paid,
-    sol_paid_usdc: holding.sol_paid_usdc,
-    sol_fee_paid_usdc: holding.sol_fee_paid_usdc,
-    per_token_paid_usdc: holding.per_token_paid_usdc,
-    slot: holding.slot,
+    balance: parseFloat(holding.balance),
+    sol_paid: parseFloat(holding.sol_paid),
+    sol_fee_paid: parseFloat(holding.sol_fee_paid),
+    sol_paid_usdc: parseFloat(holding.sol_paid_usdc),
+    sol_fee_paid_usdc: parseFloat(holding.sol_fee_paid_usdc),
+    per_token_paid_usdc: parseFloat(holding.per_token_paid_usdc),
+    slot: parseInt(holding.slot, 10),
     program: holding.program,
   }));
 }

@@ -148,7 +148,7 @@ async function processTransaction(signature: string): Promise<void> {
       };
 
       await insertHolding(newHolding);
-      sendDiscordMessage(`New Holding: sol fee ${solFeePaidUsdc} usdc, token amount ${tokenAmount}, per token usdc price ${perTokenUsdcPrice}`);
+      sendDiscordMessage(`New Holding: sol fee ${solFeePaidUsdc} usdc, token amount ${tokenAmount}, per token usdc price ${perTokenUsdcPrice}, token price: ${tokenPrice[data.tokenMint]?.price}`);
 
   }
 }
