@@ -125,7 +125,7 @@ async function processTransaction(signature: string): Promise<void> {
       console.log("💰 Buy Quote: ", buyQuote);
       const solPriceUsdc = tokenPrice[config.liquidity_pool.wsol_pc_mint]?.price
       const solPaidUsdc = solPriceUsdc * 0.01;
-      const tokenAmount = buyQuote.outAmount;
+      const tokenAmount = buyQuote.outAmount / 1_000_000_000;
       const solFeePaidUsdc = solPriceUsdc * 0.001;
       const perTokenUsdcPrice = solPaidUsdc / tokenAmount;
 
