@@ -56,11 +56,11 @@ export const config = {
     max_score: 0, // Set to 0 to ignore
     check_dangerous_risks: true,
     legacy_not_allowed: [
-      "Low Liquidity",
-      "Single holder ownership",
-      "High holder concentration",
-      "Freeze Authority still enabled",
-      "Large Amount of LP Unlocked",
+      // "Low Liquidity",
+      // "Single holder ownership",
+      // "High holder concentration",
+      // "Freeze Authority still enabled",
+      // "Large Amount of LP Unlocked",
       "Copycat token",
       //"Low amount of LP Providers",
     ],
